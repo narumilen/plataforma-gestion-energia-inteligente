@@ -7,9 +7,23 @@ import org.junit.jupiter.api.Test;
 public class MainTest {
 
     @Test
-    private void queUnaBateriaSeCreaConEnergia70kWh(){
+    public void queUnaBateriaSeCreaConEnergia70kWh(){
         Bateria bateria = new Bateria("BAT",70);
 
         assertEquals(70, bateria.getEnergia());
+    }
+
+    @Test
+    public void queUnaBateriaCargaEnergiaDe70A80(){
+        Bateria bateria = new Bateria("BAT",70);
+        bateria.cargar(10);
+        assertEquals(10, bateria.getEnergia());      
+    }
+
+    @Test
+    public void queUnaBateriacon80kWhConsume10kWh(){
+        Bateria bateria = new Bateria("BAT",80);
+        bateria.consumir(10);
+        assertEquals(70, bateria.getEnergia());    
     }
 }
