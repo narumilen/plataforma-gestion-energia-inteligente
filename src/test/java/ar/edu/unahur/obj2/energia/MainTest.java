@@ -3,9 +3,14 @@ package ar.edu.unahur.obj2.energia;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import ar.edu.unahur.obj2.energia.Observador.AlarmaReservaCritica;
+import ar.edu.unahur.obj2.energia.Observador.NotificacionAdministrador;
+import ar.edu.unahur.obj2.energia.Observador.Registro;
+import ar.edu.unahur.obj2.energia.Observador.Suscrito;
 import ar.edu.unahur.obj2.energia.Operaciones.Carga;
 import ar.edu.unahur.obj2.energia.Operaciones.ControladorOperaciones;
 import ar.edu.unahur.obj2.energia.Operaciones.Operaciones;
@@ -82,5 +87,42 @@ public class MainTest {
         controlador.ejecutar(carga);
 
         assertEquals(150, bateria.getEnergia());
+    }
+
+    @Test
+    public void bateriaNotificaInteresadosAlCargar(){
+        Bateria bateria = new Bateria("BAT", 100);
+        final Boolean[] fueNotificado = {false};
+        Suscrito observador = (bat, kwh, mov) -> fueNotificado[0] = true;
+
+        bateria.registrarInteresado(observador);
+        bateria.cargar(50);
+
+        assertTrue(fueNotificado[0], "Los inscriptos fuerom notificados");
+    }
+
+    
+    @Test
+    public void sistemasreaccionanYAlarmaSeEnciende() throws ReservaInsuficienteException{
+        Bateria bateria = new Bateria("bat", 1000);
+        Registro auditoria = new Registro();
+        NotificacionAdministrador administrador = new NotificacionAdministrador();
+        AlarmaReservaCritica alarma = new AlarmaReservaCritica();
+
+        bateria.registrarInteresado(auditoria);
+        bateria.registrarInteresado(alarma);
+        bateria.registrarInteresado(administrador);
+
+        bateria.cargar(500);
+
+        assertEquals(1, auditoria.getTamañoHistorial());
+        assertEquals("Se cargaron 500 kwh en su bateria bat movimiento: carga", administrador.getUltimoMensaje());
+        assertEquals(false, alarma.alarmaEstaEncendida());
+
+        bateria.consumir(2000);
+
+        assertEquals(2, auditoria.getTamañoHistorial());
+         assertEquals("Se consumieron 2000 kwh en su bateria bat movimiento: consumo", administrador.getUltimoMensaje());
+        assertEquals(true, alarma.alarmaEstaEncendida());
     }
 }
